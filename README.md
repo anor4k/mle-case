@@ -66,17 +66,16 @@ pointing to your trained model.
 Authentication is done using a simple API key set via the `BAIN_API_KEY` environment
 variable. In your request, you must pass the `Bain-API-Key: YOUR_KEY_HERE` header.
 
-### Making a prediction
+### Making a single prediction
 
 To make a prediction through the API, make a POST request to the `/predict` endpoint,
 passing the feature information as a JSON body. All features are mandatory.
-
 Example prediction:
 
 ```shell
 curl --location 'localhost:8000/predict' \
---header 'Content-Type: application/json' \
 --header 'Bain-API-Key: YOUR_KEY_HERE' \
+--header 'Content-Type: application/json' \
 --data '{
     "type": "departamento",
     "sector": "vitacura",
@@ -91,6 +90,41 @@ curl --location 'localhost:8000/predict' \
 
 Which returns: `13070.575463557223` (results may vary depending on the training data and
 other factors).
+
+### Making a batch of predictions
+
+To make multiple predictions in a single API call, make a POST request to the
+`/predict/batch` endpoint, passing a list of input values. Example batch prediction:
+
+```shell
+curl --location 'localhost:8000/predict/batch' \
+--header 'Bain-API-Key: YOUR_KEY_HERE' \
+--header 'Content-Type: application/json' \
+--data '[
+    {
+        "type": "departamento",
+        "sector": "vitacura",
+        "net_usable_area": 140.0,
+        "net_area": 170.0,
+        "n_rooms": 4.0,
+        "n_bathroom": 4.0,
+        "latitude": -33.40123,
+        "longitude": -70.58055999999998
+    },
+    {
+        "type": "casa",
+        "sector": "nunoa",
+        "net_usable_area": 100,
+        "net_area": 110.0,
+        "n_rooms": 1.0,
+        "n_bathroom": 1.0,
+        "latitude": -33.40123,
+        "longitude": -70.58055999999998
+    }
+]'
+```
+
+Which returns `[13070.575463557223, 11624.16666343965]` (results may vary).
 
 #### Deploying with Docker
 

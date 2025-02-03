@@ -35,19 +35,33 @@ def verify_api_key(api_key: str = Depends(api_key_header)):
     return api_key
 
 
+def make_prediction(data: list[InputData]):
+    logger.info(f"Received data: {data}")
+
+    # maybe there's a better way to do this instead of using a DataFrame,
+    # but it seems fast enough
+    input_df = pd.DataFrame(map(lambda x: x.model_dump(), data))
+    prediction = pipeline.predict(input_df)
+
+    logger.info(f"Predictions: {prediction}")
+
+    return prediction.tolist()
+
+
 @app.post("/predict")
 def predict(data: InputData, api_key: str = Depends(verify_api_key)):
     try:
-        # maybe there's a better way to do this instead of using a DataFrame,
-        # but it seems fast enough
-        print(data)
-        model_dump = data.model_dump()
-        logger.info(f"Received data: {model_dump}")
-        input_df = pd.DataFrame([model_dump])
+        return make_prediction([data])[0]
 
-        prediction = pipeline.predict(input_df)[0]
-        logger.info(f"Prediction: {prediction}")
-        return prediction
+    except Exception as e:
+        logger.exception(f"An error occurred while predicting: {e}.")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/predict/batch")
+def predict_batch(data: list[InputData], api_key: str = Depends(verify_api_key)):
+    try:
+        return make_prediction(data).tolist()
 
     except Exception as e:
         logger.exception(f"An error occurred while predicting: {e}.")
