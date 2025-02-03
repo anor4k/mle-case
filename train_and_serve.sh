@@ -13,5 +13,6 @@ bain_pipeline
 # Serve the model
 docker run \
 --mount type=bind,source="$(pwd)/model.pkl",target=/model.pkl \
+-e BAIN_API_KEY=${BAIN_API_KEY}\
 -p 8000:8000 \
 bain_api

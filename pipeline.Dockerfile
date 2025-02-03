@@ -23,7 +23,7 @@ COPY --from=builder --chown=app:app /app /app
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Run the train pipeline
-CMD ["python", "/app/src/property_pipeline_bain/pipeline.py", \
+CMD ["python", "/app/src/property_pipeline_bain/pipeline/pipeline.py", \
     "--train-path", "/train.csv",\
     "--test-path", "/test.csv", \
     "--output-path", "/model.pkl"]

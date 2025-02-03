@@ -24,4 +24,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # Run the FastAPI application by default
 EXPOSE 8000
-CMD ["fastapi", "run", "/app/src/property_pipeline_bain/api.py"]
+CMD ["fastapi", "run", "/app/src/property_pipeline_bain/api/main.py"]
