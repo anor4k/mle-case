@@ -15,6 +15,12 @@ app = FastAPI()
 API_KEY_NAME = "Bain-API-Key"
 API_KEY = os.environ.get("BAIN_API_KEY")
 
+if API_KEY is None:
+    logger.warning(
+        "API key not set. Please ensure this is not a mistake, "
+        "or this API will be open to the internet."
+    )
+
 # Load the pre-trained sklearn pipeline
 model_path = os.environ.get("PROPERTY_MODEL_PATH", "model.pkl")
 try:
@@ -26,7 +32,7 @@ except FileNotFoundError:
     )
 
 
-api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 
 def verify_api_key(api_key: str = Depends(api_key_header)):
