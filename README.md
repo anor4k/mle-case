@@ -16,16 +16,54 @@ is recommended. To install `uv`, run `curl -LsSf https://astral.sh/uv/install.sh
 Run `uv venv` to automatically create a virtual environment, and `uv sync` to install
 the dependencies from `pyproject.toml`.
 
-### Training
+### Running with Docker
+
+This project has a `pipeline.Dockerfile` and an `api.Dockerfile` for running the train
+pipeline and serving the API, respectively, in a reproductible environment.
+
+You can place the files `train.csv` and `test.csv` in the project directory and run the
+`train_and_serve.sh` script to quickly build the images and run the pipeline and serve
+the model.
+
+When running the training pipeline, mount the train and test files to `/train.csv` and
+`/test.csv` paths in the container, respectively, using
+`--mount type-bind,source=/path/to/file.csv,target=/file.csv` to mount. You must also
+specify the output model path, which will be read by the API container, to `/model.pkl`.
+
+To serve the model, run the image built from `api.Dockerfile` by binding the model file
+to `/model.pkl` and the port `8000` to expose FastAPI.
+
+```shell
+docker build -t bain_pipeline -f pipeline.Dockerfile .
+
+docker build -t bain_api -f api.Dockerfile .
+
+# Train the model
+docker run \
+--mount type=bind,source="$(pwd)/train.csv",target=/train.csv \
+--mount type=bind,source="$(pwd)/test.csv",target=/test.csv \
+--mount type=bind,source="$(pwd)/model.pkl",target=/model.pkl \
+bain_pipeline
+
+# Serve the model
+docker run \
+--mount type=bind,source="$(pwd)/model.pkl",target=/model.pkl \
+-p 8000:8000 \
+bain_api
+```
+
+### Running locally
+
+#### Training
 
 To run the training pipeline, use `uv run src/property_pipeline_bain/pipeline.py --train-path /path/to/train.csv --test-path /path/to/test.csv`.
 
 By default, this will save a `model.pkl` file in the current directory. To override the
 output path, use the `--output-path /path/to/model.pkl` argument.
 
-### API
+#### API
 
-#### Running
+##### Running
 
 To run the FastAPI server, use `uv run fastapi run src/property_pipeline_bain/api.py`.
 The API will be available at `localhost:8000`, by default.
@@ -34,7 +72,7 @@ By default, it will try to load a `model.pkl` file from the current directory. I
 wish to override the model source, set the `PROPERTY_MODEL_PATH` environment variable
 pointing to your trained model.
 
-#### Making a prediction
+### Making a prediction
 
 To make a prediction through the API, make a POST request to the `/predict` endpoint,
 passing the feature information as a JSON body. All features are mandatory.
