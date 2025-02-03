@@ -74,7 +74,8 @@ quality of data. Abnormal inputs will lead to abnormal outputs.
 ### Next steps and improvements
 
 This project has very basic tests configured using `pytest`. A more complete test suite
-is warranted for production, to make sure changes don't break expected behavior.
+is warranted for production, to make sure changes don't break expected behavior. `ruff`
+was used for basic linting and formatting, but should be enforced through pre-commit.
 
 This code could be easily deployed for recurrent re-training using simple cron jobs or
 airflow, by simply updating the .csv files and running the cli command again. Since db
@@ -84,3 +85,11 @@ Currently, training parameters and test metrics are only printed to `stdout`. A 
 approach would be to use MLflow to log metrics and evaluate model performance over
 time. MLflow could also be used to log models, and even to serve models for the FastAPI
 server or through its own framework.
+
+Another improvement opportunity is auto-parameter tuning, which would be useful in
+recurrent training, since they are currently hardcoded. Using a framework like Optuna
+is ideal, though a simple solution like GridSearchCV is also viable. MLflow can help
+with logging all the hyperparameter runs and choosing the best model.
+
+For production, CI through GitHub Actions would enable automatic code checks and
+automatic deployment of the server wherever it's hosted.

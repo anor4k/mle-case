@@ -31,24 +31,24 @@ CATEGORICAL_FEATURES = ["type", "sector"]
 MODEL_TARGET = "price"
 
 
-# TODO: this should probably be in a separate file
+# This should probably be in a separate file, but we can keep it here for now.
 def mae(y_true: pd.Series, y_pred: pd.Series) -> float:
-    """Function to calculate the mean absolute error."""
+    """Calculate the mean absolute error."""
     return float(mean_absolute_error(y_true, y_pred))
 
 
 def rmse(y_true: pd.Series, y_pred: pd.Series) -> float:
-    """Function to calculate the root mean squared error."""
+    """Calculate the root mean squared error."""
     return float(np.sqrt(mean_squared_error(y_true, y_pred)))
 
 
 def mape(y_true: pd.Series, y_pred: pd.Series) -> float:
-    """Function to calculate the mean absolute percentage error."""
+    """Calculate the mean absolute percentage error."""
     return float(mean_absolute_percentage_error(y_true, y_pred))
 
 
 class DataLoader:
-    """Class to load data for training of the Property model.
+    """Load data for training of the Property model.
 
     The class can be directly instantiated by providing train and test pandas
     dataframes, or by using the method for each appropriate source.
@@ -56,6 +56,15 @@ class DataLoader:
     """
 
     def __init__(self, train_data: pd.DataFrame, test_data: pd.DataFrame | None = None):
+        """Create a new instance of the DataLoader class.
+
+        Though possible to instantiate directly, it is recommended to use one of the
+        class methods to load the data from the appropriate source.
+
+        Args:
+            train_data (pd.DataFrame): The training data.
+            test_data (pd.DataFrame, optional): The test data. Defaults to None.
+"""
         self.train_data, self.test_data = self.validate_data(
             train_data=train_data, test_data=test_data
         )
@@ -76,14 +85,14 @@ class DataLoader:
     def validate_data(
         train_data: pd.DataFrame, test_data: pd.DataFrame | None = None
     ) -> tuple[pd.DataFrame, pd.DataFrame | None]:
-        """Method to validate the data before training the model."""
+        """Validate the data before training the model."""
 
         if train_data.isna().any().any():
             raise ValueError("The training data contains missing values.")
         if test_data is not None and test_data.isna().any().any():
             raise ValueError("The test data contains missing values.")
 
-        cols = MODEL_FEATURES + [MODEL_TARGET]
+        cols = [*MODEL_FEATURES, MODEL_TARGET]
         if not set(cols).issubset(train_data.columns):
             raise ValueError("The training data does not contain the required columns.")
 
@@ -99,7 +108,7 @@ class DataLoader:
     def train_test_split(
         self, target: str
     ) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame | None, pd.Series | None]:
-        """Method to return the data in the format required for training the model.
+        """Return the data in the format required for training the model.
 
         If the test data was not provided during initialization, the method will return
         None for X_test and y_test.
@@ -120,6 +129,11 @@ class DataLoader:
 
     @classmethod
     def from_csv(cls, train_path: str, test_path: str | None = None):
+        """Load data from CSV files.
+
+        Args:
+            train_path (str): Path to the training data.
+            test_path (str, optional): Path to the test data. Defaults to None."""
         train = pd.read_csv(train_path)
         test = pd.read_csv(test_path) if test_path else None
 
@@ -132,7 +146,7 @@ class DataLoader:
 
 
 class ModelPipeline:
-    """Class to create a pipeline for training and prediction of a Property model.
+    """Create a pipeline for training and prediction of a Property model.
 
     The class can be directly instantiated by providing the DataLoader object,
     or by using the method for each appropriate source. To instantiate from a trained
@@ -140,6 +154,10 @@ class ModelPipeline:
     """
 
     def __init__(self, data_loader: DataLoader):
+        """
+        Args:
+            data_loader (DataLoader): An instance of the DataLoader class, loaded
+                with the train data and optionally test data."""
         self.data_loader = data_loader
         # Model params are hardcoded here but could be loaded from a config file
         # or passed as arguments in the constructor.
@@ -152,7 +170,7 @@ class ModelPipeline:
         )
 
     def _create_pipeline(self, categorical_features: list[str], **model_params):
-        """Method to create a pipeline for training the model."""
+        """Create a pipeline for training the model."""
 
         # Define preprocessing
         column_transformer = ColumnTransformer(
@@ -170,7 +188,7 @@ class ModelPipeline:
         return pipeline
 
     def train(self) -> Pipeline:
-        """Method to train the model using the pipeline."""
+        """Train the model using the pipeline."""
 
         X_train, y_train, X_test, y_test = self.data_loader.train_test_split(
             target=MODEL_TARGET
@@ -191,7 +209,7 @@ class ModelPipeline:
         return self.pipeline
 
     def save_pipeline(self, path: str) -> None:
-        """Method to save the pipeline to a file."""
+        """Save the pipeline to a file."""
         if self.pipeline is None:
             raise ValueError("The pipeline has not been trained yet.")
 

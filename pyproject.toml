@@ -9,7 +9,7 @@ dependencies = [
     "numpy>=2.0,<3",
     "pandas>=2.0,<3",
     "scikit-learn>=1.0,<2",
-    "category-encoders",
+    "category_encoders",
     "fastapi[standard]>=0.115,<1",
     "pydantic>=2,<3",
 ]
